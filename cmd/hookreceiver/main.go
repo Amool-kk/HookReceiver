@@ -1,13 +1,30 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
+type config struct {
+	Addr string
+}
+
+func mustLoadConfig() config {
+	return config{
+		Addr: "127.0.0.1:8080",
+	}
+}
+
 func main() {
-	fmt.Printf("Starting the server")
+	cfg := mustLoadConfig()
+
+	slog.Info("Server started", slog.String("addr", cfg.Addr))
 
 	router := http.NewServeMux()
 
@@ -16,13 +33,31 @@ func main() {
 	})
 
 	server := http.Server{
-		Addr:    "127.0.0.1:8000",
+		Addr:    cfg.Addr,
 		Handler: router,
 	}
 
-	err := server.ListenAndServe()
+	done := make(chan os.Signal, 1)
 
-	if err != nil {
-		log.Fatal("Failed to start server")
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal("Failed to start server")
+		}
+	}()
+
+	<-done
+
+	slog.Info("shutting down the server")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("Failed to shutdown server", slog.String("error", err.Error()))
 	}
+
+	slog.Info("Server shutdown successfully")
 }

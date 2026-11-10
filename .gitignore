@@ -18,3 +18,25 @@
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+# Build output
+/bin/
+/dist/
+
+# Coverage reports
+coverage.*
+*.coverprofile
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Environment files
+.env
+.env.*
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
