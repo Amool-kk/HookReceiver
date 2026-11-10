@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func main(){
+func main() {
 	fmt.Printf("Starting the server")
 
 	router := http.NewServeMux()
@@ -16,13 +16,13 @@ func main(){
 	})
 
 	server := http.Server{
-		Addr: "127.0.0.1:8000",
+		Addr:    "127.0.0.1:8000",
 		Handler: router,
 	}
 
 	err := server.ListenAndServe()
 
-	if err != nil{
+	if err != nil {
 		log.Fatal("Failed to start server")
 	}
 }
